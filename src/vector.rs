@@ -1,16 +1,17 @@
 use std::f64;
+use std::ops::{Add, Sub, Mul, Div, Neg};
 
 #[derive(Debug, Clone, Copy)]
-pub struct vector3
+pub struct Vector3
 {
     x: f64,
     y: f64,
     z: f64
 }
 
-impl vector3
+impl Vector3
 {
-    pub fn difflen(&self, v: &vector3) -> f64
+    pub fn difflen(&self, v: &Vector3) -> f64
     {
         (self.x - v.x) * (self.x - v.x)
         + (self.y - v.y) * (self.y - v.y)
@@ -31,29 +32,29 @@ impl vector3
         + self.z * self.z
     }
 
-    pub fn unit(&self) -> vector3
+    pub fn unit(&self) -> Vector3
     {
-        vector3::new(
-            self.x / self.len(),
-            self.y / self.len(),
-            self.z / self.len()
-        )
+        Vector3 {
+            x: self.x / self.len(),
+            y: self.y / self.len(),
+            z: self.z / self.len()
+        }
     }
 
-    pub fn dot(&self, v: &vector3)
+    pub fn dot(&self, v: &Vector3) -> f64
     {
         self.x * v.x
         + self.y * v.y
         + self.z * v.z
     }
 
-    pub fn cross(&self, v: &vector3)
+    pub fn cross(&self, v: &Vector3) -> Vector3
     {
-        vector3::new(
-            self.y * v.z - self.z * v.y,
-            self.z * v.x - self.x * v.z,
-            self.x * v.y - self.y * v.x,
-        )
+        Vector3 {
+            x: self.y * v.z - self.z * v.y,
+            y: self.z * v.x - self.x * v.z,
+            z: self.x * v.y - self.y * v.x,
+        }
     }
 
     pub fn iszero(&self) -> bool
@@ -65,13 +66,13 @@ impl vector3
     }
 }
 
-impl Add for vector3
+impl Add for Vector3
 {
-    type Output = vector3;
+    type Output = Vector3;
 
-    fn add(self, v: vector3) -> vector3
+    fn add(self, v: Vector3) -> Vector3
     {
-        vector3 {
+        Vector3 {
             x: self.x + v.x,
             y: self.y + v.y,
             z: self.z + v.z,
@@ -79,12 +80,12 @@ impl Add for vector3
     }
 }
 
-impl Sub for vector3 {
-    type Output = vector3;
+impl Sub for Vector3 {
+    type Output = Vector3;
 
-    fn sub(self, v: vector3) -> vector3
+    fn sub(self, v: Vector3) -> Vector3
     {
-        vector3 {
+        Vector3 {
             x: self.x - v.x,
             y: self.y - v.y,
             z: self.z - v.z,
@@ -92,12 +93,12 @@ impl Sub for vector3 {
     }
 }
 
-impl Neg for vector3 {
-    type Output = vector3;
+impl Neg for Vector3 {
+    type Output = Vector3;
 
-    fn neg(self) -> vector3
+    fn neg(self) -> Vector3
     {
-        vector3 {
+        Vector3 {
             x: -self.x,
             y: -self.y,
             z: -self.z,
@@ -105,11 +106,11 @@ impl Neg for vector3 {
     }
 }
 
-impl Mul<vector3> for vector3 {
-    type Output = vector3;
+impl Mul<Vector3> for Vector3 {
+    type Output = Vector3;
 
-    fn mul(self, v: vector3) -> vector3 {
-        vector3 {
+    fn mul(self, v: Vector3) -> Vector3 {
+        Vector3 {
             x: self.x * v.x,
             y: self.y * v.y,
             z: self.z * v.z,
@@ -117,11 +118,11 @@ impl Mul<vector3> for vector3 {
     }
 }
 
-impl Mul<f64> for vector3 {
-    type Output = vector3;
+impl Mul<f64> for Vector3 {
+    type Output = Vector3;
 
-    fn mul(self, s: f64) -> vector3 {
-        vector3 {
+    fn mul(self, s: f64) -> Vector3 {
+        Vector3 {
             x: self.x * s,
             y: self.y * s,
             z: self.z * s,
@@ -129,12 +130,12 @@ impl Mul<f64> for vector3 {
     }
 }
 
-impl Div<vector3> for vector3 {
-    type Output = vector3;
+impl Div<Vector3> for Vector3 {
+    type Output = Vector3;
 
-    fn div(self, v: vector3) -> vector3
+    fn div(self, v: Vector3) -> Vector3
     {
-        vector3 {
+        Vector3 {
             x: self.x / v.x,
             y: self.y / v.y,
             z: self.z / v.z,
@@ -142,13 +143,13 @@ impl Div<vector3> for vector3 {
     }
 }
 
-impl Div<f64> for vector3
+impl Div<f64> for Vector3
 {
-    type Output = vector3;
+    type Output = Vector3;
 
-    fn div(self, s: f64) -> vector3
+    fn div(self, s: f64) -> Vector3
     {
-        vector3 {
+        Vector3 {
             x: self.x / s,
             y: self.y / s,
             z: self.z / s,
@@ -156,9 +157,9 @@ impl Div<f64> for vector3
     }
 }
 
-impl PartialEq for vector3
+impl PartialEq for Vector3
 {
-    fn eq(&self, v: &vector3) -> bool
+    fn eq(&self, v: &Vector3) -> bool
     {
         self.x == v.x
         && self.y == v.y
