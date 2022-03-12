@@ -1,168 +1,132 @@
 use std::f64;
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
-#[derive(Debug, Clone, Copy)]
-pub struct Vector3
-{
-    x: f64,
-    y: f64,
-    z: f64
+#[derive(Clone)]
+pub struct VectorN {
+    coords: Vec<f64>
 }
 
-impl Vector3
-{
-    pub fn difflen(&self, v: &Vector3) -> f64
-    {
-        (self.x - v.x) * (self.x - v.x)
-        + (self.y - v.y) * (self.y - v.y)
-        + (self.z - v.z) * (self.z - v.z)
+impl VectorN {
+    pub fn difflen(&self, v: &VectorN) -> f64 {
+        let mut tot = 0.;
+        for i in 0..v.coords.len() {
+            tot += self.coords[i] - v.coords[i];
+        }
+
+        tot.sqrt()
     }
 
-    pub fn len(&self) -> f64
-    {
-        (self.x * self.x
-        + self.y * self.y
-        + self.z * self.z).sqrt()
+    pub fn len(&self) -> f64 {
+        self.coords.iter().map(|f| f * f).sum::<f64>().sqrt()
     }
 
-    pub fn lensqrd(&self) -> f64
-    {
-        self.x * self.x
-        + self.y * self.y
-        + self.z * self.z
+    pub fn lensqr(&self) -> f64 {
+        self.coords.iter().map(|f| f * f).sum::<f64>()
     }
 
-    pub fn unit(&self) -> Vector3
-    {
-        Vector3 {
-            x: self.x / self.len(),
-            y: self.y / self.len(),
-            z: self.z / self.len()
+    pub fn unit(&self) -> VectorN {
+        let l = self.len();
+        VectorN {
+            coords: self.coords.iter().map(|f| f / l).collect::<Vec<f64>>()
         }
     }
 
-    pub fn dot(&self, v: &Vector3) -> f64
-    {
-        self.x * v.x
-        + self.y * v.y
-        + self.z * v.z
-    }
-
-    pub fn cross(&self, v: &Vector3) -> Vector3
-    {
-        Vector3 {
-            x: self.y * v.z - self.z * v.y,
-            y: self.z * v.x - self.x * v.z,
-            z: self.x * v.y - self.y * v.x,
+    pub fn mul(&self, v: VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] * v.coords[i])
+                        .collect::<Vec<f64>>()
         }
     }
 
-    pub fn iszero(&self) -> bool
-    {
-        self.x.abs() < f64::EPSILON
-        && self.y.abs() < f64::EPSILON
-        && self.z.abs() < f64::EPSILON
+    pub fn div(&self, v: VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] / v.coords[i])
+                        .collect::<Vec<f64>>()
+        }
+    }
 
+    pub fn iszero(&self) -> bool {
+        self.coords.iter().all(|&f| f < f64::EPSILON)
+    }
+
+    pub fn dot(&self, v: &VectorN) -> f64 {
+        (0..v.coords.len())
+            .map(|i| self.coords[i] * v.coords[i])
+            .sum::<f64>()
     }
 }
 
-impl Add for Vector3
-{
-    type Output = Vector3;
+impl Add for VectorN {
+    type Output = VectorN;
 
-    fn add(self, v: Vector3) -> Vector3
-    {
-        Vector3 {
-            x: self.x + v.x,
-            y: self.y + v.y,
-            z: self.z + v.z,
+    fn add(self, v: VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] + v.coords[i])
+                        .collect::<Vec<f64>>()
         }
     }
 }
 
-impl Sub for Vector3 {
-    type Output = Vector3;
+impl Sub for VectorN {
+    type Output = VectorN;
 
-    fn sub(self, v: Vector3) -> Vector3
-    {
-        Vector3 {
-            x: self.x - v.x,
-            y: self.y - v.y,
-            z: self.z - v.z,
+    fn sub(self, v: VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] - v.coords[i])
+                        .collect::<Vec<f64>>()
         }
     }
 }
 
-impl Neg for Vector3 {
-    type Output = Vector3;
+impl Neg for VectorN {
+    type Output = VectorN;
 
-    fn neg(self) -> Vector3
-    {
-        Vector3 {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
+    fn neg(self) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| -f).collect::<Vec<f64>>()
         }
     }
 }
 
-impl Mul<Vector3> for Vector3 {
-    type Output = Vector3;
+impl Mul<VectorN> for VectorN {
+    type Output = VectorN;
 
-    fn mul(self, v: Vector3) -> Vector3 {
-        Vector3 {
-            x: self.x * v.x,
-            y: self.y * v.y,
-            z: self.z * v.z,
+    fn mul(self, v: VectorN) -> VectorN {
+        let l = v.coords.len();
+        VectorN {
+            coords: (0..l)
+                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l])
+                        .collect::<Vec<f64>>()
         }
     }
 }
 
-impl Mul<f64> for Vector3 {
-    type Output = Vector3;
+impl Mul<f64> for VectorN {
+    type Output = VectorN;
 
-    fn mul(self, s: f64) -> Vector3 {
-        Vector3 {
-            x: self.x * s,
-            y: self.y * s,
-            z: self.z * s,
+    fn mul(self, s: f64) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| s * f).collect::<Vec<f64>>()
         }
     }
 }
 
-impl Div<Vector3> for Vector3 {
-    type Output = Vector3;
+impl Div<f64> for VectorN {
+    type Output = VectorN;
 
-    fn div(self, v: Vector3) -> Vector3
-    {
-        Vector3 {
-            x: self.x / v.x,
-            y: self.y / v.y,
-            z: self.z / v.z,
+    fn div(self, s: f64) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| f / s).collect::<Vec<f64>>()
         }
     }
 }
 
-impl Div<f64> for Vector3
-{
-    type Output = Vector3;
-
-    fn div(self, s: f64) -> Vector3
-    {
-        Vector3 {
-            x: self.x / s,
-            y: self.y / s,
-            z: self.z / s,
-        }
-    }
-}
-
-impl PartialEq for Vector3
-{
-    fn eq(&self, v: &Vector3) -> bool
-    {
-        self.x == v.x
-        && self.y == v.y
-        && self.z == v.z
+impl PartialEq for VectorN {
+    fn eq(&self, v: &VectorN) -> bool {
+        (0..v.coords.len()).all(|i| v.coords[i] == self.coords[i])
     }
 }
