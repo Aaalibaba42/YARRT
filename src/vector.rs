@@ -1,5 +1,9 @@
 use std::f64;
+use std::cmp::PartialEq;
 use std::ops::{Add, Sub, Mul, Div, Neg};
+
+#[cfg(test)]
+use assert_approx_eq::assert_approx_eq;
 
 #[derive(Clone)]
 pub struct VectorN {
@@ -7,21 +11,25 @@ pub struct VectorN {
 }
 
 impl VectorN {
-    pub fn difflen(&self, v: &VectorN) -> f64 {
-        let mut tot = 0.;
-        for i in 0..v.coords.len() {
-            tot += self.coords[i] - v.coords[i];
+    pub fn new(v: Vec<f64>) -> VectorN {
+        VectorN {
+            coords: v
         }
-
-        tot.sqrt()
     }
 
-    pub fn len(&self) -> f64 {
-        self.coords.iter().map(|f| f * f).sum::<f64>().sqrt()
+    pub fn difflen(&self, v: &VectorN) -> f64 {
+        (0..v.coords.len())
+        .map(|i| (self.coords[i] - v.coords[i]) * (self.coords[i] - v.coords[i]))
+        .sum::<f64>()
+        .sqrt()
     }
 
     pub fn lensqr(&self) -> f64 {
         self.coords.iter().map(|f| f * f).sum::<f64>()
+    }
+
+    pub fn len(&self) -> f64 {
+        self.lensqr().sqrt()
     }
 
     pub fn unit(&self) -> VectorN {
@@ -31,7 +39,7 @@ impl VectorN {
         }
     }
 
-    pub fn mul(&self, v: VectorN) -> VectorN {
+    pub fn mult(&self, v: &VectorN) -> VectorN {
         VectorN {
             coords: (0..v.coords.len())
                         .map(|i| self.coords[i] * v.coords[i])
@@ -39,7 +47,7 @@ impl VectorN {
         }
     }
 
-    pub fn div(&self, v: VectorN) -> VectorN {
+    pub fn divide(&self, v: VectorN) -> VectorN {
         VectorN {
             coords: (0..v.coords.len())
                         .map(|i| self.coords[i] / v.coords[i])
@@ -92,14 +100,15 @@ impl Neg for VectorN {
     }
 }
 
-impl Mul<VectorN> for VectorN {
+impl Mul<&VectorN> for VectorN {
     type Output = VectorN;
 
-    fn mul(self, v: VectorN) -> VectorN {
+    fn mul(self, v: &VectorN) -> VectorN {
         let l = v.coords.len();
         VectorN {
             coords: (0..l)
-                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l])
+                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l]
+                               - self.coords[(i + 2)%l] * v.coords[(i + 1)%l])
                         .collect::<Vec<f64>>()
         }
     }
@@ -129,4 +138,199 @@ impl PartialEq for VectorN {
     fn eq(&self, v: &VectorN) -> bool {
         (0..v.coords.len()).all(|i| v.coords[i] == self.coords[i])
     }
+}
+
+
+/* ---------------------TESTS--------------------- */
+
+#[test]
+fn test_gen() {
+    let v = VectorN {
+        coords: vec![0., 1., 3.]
+    };
+
+    let s1 = vec![0., 1., 3.];
+    for i in 0..s1.len() {
+        assert_approx_eq!(s1[i], v.coords[i]);
+    }
+    assert!(s1.len() == v.coords.len());
+
+    let w = VectorN::new(vec![98., 0.81, 42.69]);
+
+    let s2 = vec![98., 0.81, 42.69];
+    for i in 0..s2.len() {
+        assert_approx_eq!(s2[i], w.coords[i]);
+    }
+    assert!(s2.len() == w.coords.len());
+}
+
+#[test]
+fn test_difflen() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.4, 0.3, 0.2]);
+
+    assert_approx_eq!(v.difflen(&w), (0.11 as f64).sqrt());
+}
+
+#[test]
+fn test_lensqr() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+
+    assert_approx_eq!(v.lensqr(), 0.14);
+}
+
+#[test]
+fn test_len() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+
+    assert_approx_eq!(v.len(), (0.14 as f64).sqrt())
+}
+
+#[test]
+fn test_unit() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let r = v.unit();
+
+    let l = v.len();
+    let s = vec![0.1/l, 0.2/l, 0.3/l];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+    assert_approx_eq!(1., r.len());
+}
+
+#[test]
+fn test_mult() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.2, 0.3, 0.4]);
+    let r = v.mult(&w);
+
+    let s = vec![0.02, 0.06, 0.12];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == w.coords.len());
+}
+
+#[test]
+fn test_divide() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.2, 0.3, 0.4]);
+    let r = v.divide(w);
+
+    let s = vec![0.5, 2./3., 0.3/0.4];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_iszero() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    assert!(!v.iszero());
+    let w = VectorN::new(vec![0.0, 0.0, 0.0]);
+    assert!(w.iszero());
+}
+
+#[test]
+fn test_dot() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.2, 0.3, 0.4]);
+
+    assert_approx_eq!(v.dot(&w), 0.2);
+}
+
+#[test]
+fn test_add() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.2, 0.3, 0.4]);
+    let r = v + w;
+
+    let s = vec![0.3, 0.5, 0.7];
+    for i in 0..s.len() {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_sub() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.2, 0.3, 0.4]);
+    let r = v - w;
+
+    let s = vec![-0.1, -0.1, -0.1];
+    for i in 0..s.len() {
+        assert_approx_eq!(s[i], r.coords[i])
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_neg() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let r = -v;
+
+    let s = vec![-0.1, -0.2, -0.3];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_cross() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let w = VectorN::new(vec![0.2, 0.3, 0.4]);
+    let r = v * &w;
+
+    let s = vec![-0.01, 0.02, -0.01];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_scalar_mul() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let r = v * 42.;
+
+    let s = vec![4.2, 8.4, 12.6];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_scalar_div() {
+    let v = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let r = v / 42.;
+
+    let s = vec![0.1/42., 0.2/42., 0.3/42.];
+    for i in 0..s.len()
+    {
+        assert_approx_eq!(s[i], r.coords[i]);
+    }
+    assert!(s.len() == r.coords.len());
+}
+
+#[test]
+fn test_eq() {
+    let v = VectorN::new(vec![0.2, 0.3, 0.4]);
+    let w = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let vv = VectorN::new(vec![0.1, 0.2, 0.3]);
+
+    assert!(!(v == w));
+    assert!(w == vv);
+    assert!(!(vv == v));
 }
