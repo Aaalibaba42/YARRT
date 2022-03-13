@@ -64,6 +64,21 @@ impl VectorN {
             .map(|i| self.coords[i] * v.coords[i])
             .sum::<f64>()
     }
+
+    pub fn get_color(&self) -> (u8, u8, u8) {
+        if self.coords.len() != 3 {
+            panic!("get_color on vector with a dimension != 3");
+        }
+        if !self.coords.iter().all(|&f| f >= 0. && f <= 1.) {
+            panic!("get_color on vector with a color not in [0,1]");
+        }
+
+        return (
+            (self.coords[0] * 255.999) as u8,
+            (self.coords[1] * 255.999) as u8,
+            (self.coords[2] * 255.999) as u8
+        )
+    }
 }
 
 impl Add for VectorN {
@@ -144,7 +159,7 @@ impl PartialEq for VectorN {
 /* ---------------------TESTS--------------------- */
 
 #[test]
-fn test_gen() {
+fn test_gen3() {
     let v = VectorN {
         coords: vec![0., 1., 3.]
     };
@@ -165,7 +180,7 @@ fn test_gen() {
 }
 
 #[test]
-fn test_difflen() {
+fn test_difflen3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.4, 0.3, 0.2]);
 
@@ -173,21 +188,21 @@ fn test_difflen() {
 }
 
 #[test]
-fn test_lensqr() {
+fn test_lensqr3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
 
     assert_approx_eq!(v.lensqr(), 0.14);
 }
 
 #[test]
-fn test_len() {
+fn test_len3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
 
     assert_approx_eq!(v.len(), (0.14 as f64).sqrt())
 }
 
 #[test]
-fn test_unit() {
+fn test_unit3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let r = v.unit();
 
@@ -202,7 +217,7 @@ fn test_unit() {
 }
 
 #[test]
-fn test_mult() {
+fn test_mult3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.2, 0.3, 0.4]);
     let r = v.mult(&w);
@@ -216,7 +231,7 @@ fn test_mult() {
 }
 
 #[test]
-fn test_divide() {
+fn test_divide3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.2, 0.3, 0.4]);
     let r = v.divide(w);
@@ -230,7 +245,7 @@ fn test_divide() {
 }
 
 #[test]
-fn test_iszero() {
+fn test_iszero3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     assert!(!v.iszero());
     let w = VectorN::new(vec![0.0, 0.0, 0.0]);
@@ -238,7 +253,7 @@ fn test_iszero() {
 }
 
 #[test]
-fn test_dot() {
+fn test_dot3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.2, 0.3, 0.4]);
 
@@ -246,7 +261,29 @@ fn test_dot() {
 }
 
 #[test]
-fn test_add() {
+fn test_get_color() {
+    let v = VectorN::new(vec![1., 1., 1.]);
+    let (r1, g1, b1) = v.get_color();
+
+    assert!(r1 == 255);
+    assert!(g1 == 255);
+    assert!(b1 == 255);
+
+    let w = VectorN::new(vec![0., 0., 0.]);
+    let (r2, g2, b2) = w.get_color();
+    assert!(r2 == 0);
+    assert!(g2 == 0);
+    assert!(b2 == 0);
+
+    let vvv = VectorN::new(vec![0.1, 0.2, 0.3]);
+    let (r3, g3, b3) = vvv.get_color();
+    assert!(r3 == 25);
+    assert!(g3 == 51);
+    assert!(b3 == 76);
+}
+
+#[test]
+fn test_add3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.2, 0.3, 0.4]);
     let r = v + w;
@@ -259,7 +296,7 @@ fn test_add() {
 }
 
 #[test]
-fn test_sub() {
+fn test_sub3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.2, 0.3, 0.4]);
     let r = v - w;
@@ -272,7 +309,7 @@ fn test_sub() {
 }
 
 #[test]
-fn test_neg() {
+fn test_neg3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let r = -v;
 
@@ -285,7 +322,7 @@ fn test_neg() {
 }
 
 #[test]
-fn test_cross() {
+fn test_cross3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let w = VectorN::new(vec![0.2, 0.3, 0.4]);
     let r = v * &w;
@@ -299,7 +336,7 @@ fn test_cross() {
 }
 
 #[test]
-fn test_scalar_mul() {
+fn test_scalar_mul3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let r = v * 42.;
 
@@ -312,7 +349,7 @@ fn test_scalar_mul() {
 }
 
 #[test]
-fn test_scalar_div() {
+fn test_scalar_div3() {
     let v = VectorN::new(vec![0.1, 0.2, 0.3]);
     let r = v / 42.;
 
@@ -325,7 +362,7 @@ fn test_scalar_div() {
 }
 
 #[test]
-fn test_eq() {
+fn test_eq3() {
     let v = VectorN::new(vec![0.2, 0.3, 0.4]);
     let w = VectorN::new(vec![0.1, 0.2, 0.3]);
     let vv = VectorN::new(vec![0.1, 0.2, 0.3]);
