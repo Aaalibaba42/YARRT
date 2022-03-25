@@ -1,5 +1,7 @@
 use std::fs::File;
 use std::io::Write;
+use crate::vector::*;
+use crate::ray::*;
 
 pub fn write_color(mut out: File, color: (u8, u8, u8)) -> File {
     let (r, g, b) = color;
@@ -11,6 +13,13 @@ pub fn write_color(mut out: File, color: (u8, u8, u8)) -> File {
     out.write("\n".as_bytes()).unwrap();
 
     out
+}
+
+pub fn background(ray: Ray) -> VectorN {
+    let dir = ray.dir.unit();
+    let t = 0.5 * (dir.coords[2] + 1.);
+    VectorN::new(vec![1., 1., 1.]) * (1. - t)
+    + VectorN::new(vec![0.5, 0.7, 1.]) * t
 }
 
 pub fn create_outfile(path: &str, dim: u8, resolution: &str) -> File {

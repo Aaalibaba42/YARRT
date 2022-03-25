@@ -7,7 +7,7 @@ use assert_approx_eq::assert_approx_eq;
 
 #[derive(Clone)]
 pub struct VectorN {
-    coords: Vec<f64>
+    pub coords: Vec<f64>
 }
 
 impl VectorN {
