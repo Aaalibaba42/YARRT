@@ -8,6 +8,15 @@ use crate::out::*;
 use crate::vector::*;
 use crate::ray::*;
 
+fn incr(v: &mut Vec<u32>, size: u32) {
+    let mut tmp = 1;
+    for nb in v.iter_mut() {
+        *nb += tmp;
+        tmp = *nb/size;
+        *nb %= size;
+    }
+}
+
 fn main() {
     // -- Bad command --
     if env::args().count() != 4 {
@@ -57,22 +66,13 @@ fn main() {
     }
 
     // -- render --
+    let mut loopvars = vec![0; dim as usize - 1];
     for i in 0..nbpixel {
-        // TODO only works in 3d
-        let r = Ray::new(camera.pos.clone(),
-                 firstcorner.clone()
-                 + axis(0) * (1. - ((i%res) as f64 / ((res - 1) as f64)))
-                 + axis(1) * (1. - ((i/res) as f64 / ((res - 1) as f64)))
-                 - camera.pos.clone());
-        // attempt at making it n dimensional
-        // (do some kind of logarithm to know which layer you're at)
-        /*
-        tmp = firstcorner.clone();
-        for i in 0..(dim as usize) - 1 {
-            tmp = tmp.clone() +
+        tmp = firstcorner.clone() - camera.pos.clone();
+        for j in 0..(dim as usize) - 1 {
+            tmp = tmp.clone() + axis(j) * (1. - loopvars[j] as f64/res as f64);
         }
-        */
-
+        let r = Ray::new(camera.pos.clone(), tmp);
 
         out = write_color(out, background(r).get_color());
 
@@ -80,6 +80,7 @@ fn main() {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);
             stderr().flush().unwrap();
         }
+        incr(&mut loopvars, res);
     }
     eprintln!();
 }
