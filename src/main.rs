@@ -1,5 +1,6 @@
 mod vector;
 mod ray;
+mod shapes;
 mod out;
 
 use std::env;
@@ -74,7 +75,7 @@ fn main() {
         }
         let r = Ray::new(camera.pos.clone(), tmp);
 
-        out = write_color(out, background(r).get_color());
+        out = write_color(out, ray_color(r).get_color());
 
         if (i + 1) % res == 0 {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);

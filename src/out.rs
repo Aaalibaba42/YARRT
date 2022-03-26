@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use crate::vector::*;
+use crate::shapes::*;
 use crate::ray::*;
 
 pub fn write_color(mut out: File, color: (u8, u8, u8)) -> File {
@@ -18,7 +19,13 @@ pub fn write_color(mut out: File, color: (u8, u8, u8)) -> File {
 
 // only works (as intended) in 3d (TODO nD)
 // simple 'gradiant'
-pub fn background(ray: Ray) -> VectorN {
+pub fn ray_color(ray: Ray) -> VectorN {
+    let mut tmp = vec![0.; ray.dir.coords.len()];
+    tmp[ray.dir.coords.len() - 1] = -1.;
+    let s = Sphere::new(VectorN::new(tmp), 0.5);
+    if s.is_hit(&ray) {
+        return VectorN::new(vec![1., 0., 0.]);
+    }
     let dir = ray.dir.unit();
     let t = 0.5 * (dir.coords[1] + 1.);
     VectorN::new(vec![1., 1., 1.]) * (1. - t)
