@@ -9,10 +9,13 @@ use crate::vector::*;
 use crate::ray::*;
 
 fn main() {
+    // -- Bad command --
     if env::args().count() != 4 {
         println!("Usage: ./yaart OutFile dimensions resolution");
         return;
     }
+
+    // -- prase command --
     let mut args = env::args();
     args.next();
     let path: String = args.next().unwrap();
@@ -20,30 +23,58 @@ fn main() {
     let dim = args.next().unwrap().parse::<u8>().unwrap();
     let resolution = args.next().unwrap();
 
+    // -- creating and initialising output file --
     let mut out = create_outfile(&path, dim, &resolution);
 
+    // -- useful values --
     let res = resolution.parse::<u32>().unwrap();
     let nbpixel = res.pow((dim - 1) as u32);
 
     let viewport_size = 2.0;
     let focal_len = 1.0;
-    let camera = Ray {
-        pos: VectorN(vec![0.; dim]),
-        dir: VectorN(vec![0.; dim])
+    // camera is basicly an object somewhere oriented to a dir
+    // so assimilable to a Ray
+    let mut camera = Ray {
+        pos: VectorN::new(vec![0.; dim as usize]),
+        dir: VectorN::new(vec![0.; dim as usize])
     };
-    camera.dir[dim - 1] = 1.;
+    // looking forward in the last coord, 0 otherwise
+    camera.dir.coords[dim as usize - 1] = 1.;
 
+    // couldn't hardcode axis vectors
+    let axis = |n: usize| -> VectorN {
+        let mut r = VectorN::new(vec![0.; dim as usize]);
+        r.coords[n] = viewport_size;
+        r
+    };
+
+    // calculating starting point
+    let mut tmp = VectorN::new(vec![0.; dim as usize]);
+    tmp.coords[(dim as usize)-1] = focal_len;
+    let mut firstcorner = camera.pos.clone() - tmp;
+    for i in 0..(dim as usize)-1 {
+        firstcorner = firstcorner.clone() - axis(i)/2.;
+    }
+
+    // -- render --
     for i in 0..nbpixel {
-        let r = ((i%res) as f64) / ((res - 1) as f64);
-        let g = ((i/res) as f64) / ((res - 1) as f64);
-        let b = (i as f64 / nbpixel as f64) - r + g;
-        //let b = 0.25;
+        // TODO only works in 3d
+        let r = Ray::new(camera.pos.clone(),
+                 firstcorner.clone()
+                 + axis(0) * (1. - ((i%res) as f64 / ((res - 1) as f64)))
+                 + axis(1) * (1. - ((i/res) as f64 / ((res - 1) as f64)))
+                 - camera.pos.clone());
+        // attempt at making it n dimensional
+        // (do some kind of logarithm to know which layer you're at)
+        /*
+        tmp = firstcorner.clone();
+        for i in 0..(dim as usize) - 1 {
+            tmp = tmp.clone() +
+        }
+        */
 
-        out = write_color(out, (
-            ((255.999 * r) as u8),
-            ((255.999 * g) as u8),
-            ((255.999 * b) as u8)
-        ));
+
+        out = write_color(out, background(r).get_color());
 
         if (i + 1) % res == 0 {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);

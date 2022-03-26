@@ -5,6 +5,10 @@ use std::ops::{Add, Sub, Mul, Div, Neg};
 #[cfg(test)]
 use assert_approx_eq::assert_approx_eq;
 
+// this class will denote a lot of things depending on the context,
+// colors with 3 coords
+// points with dim coords
+// vectors with dim coords
 #[derive(Clone)]
 pub struct VectorN {
     pub coords: Vec<f64>
@@ -17,6 +21,8 @@ impl VectorN {
         }
     }
 
+    // difference of the length between 2 vectors
+    // equivalent to distance of 2 points
     pub fn difflen(&self, v: &VectorN) -> f64 {
         (0..v.coords.len())
         .map(|i| (self.coords[i] - v.coords[i]) * (self.coords[i] - v.coords[i]))
@@ -24,6 +30,7 @@ impl VectorN {
         .sqrt()
     }
 
+    // length squared
     pub fn lensqr(&self) -> f64 {
         self.coords.iter().map(|f| f * f).sum::<f64>()
     }
@@ -32,6 +39,7 @@ impl VectorN {
         self.lensqr().sqrt()
     }
 
+    // unit vector colinear to initial vector
     pub fn unit(&self) -> VectorN {
         let l = self.len();
         VectorN {
@@ -39,6 +47,7 @@ impl VectorN {
         }
     }
 
+    // "stupid" multiplication, mult 1 by 1 every coord
     pub fn mult(&self, v: &VectorN) -> VectorN {
         VectorN {
             coords: (0..v.coords.len())
@@ -47,6 +56,7 @@ impl VectorN {
         }
     }
 
+    // same as mult
     pub fn divide(&self, v: VectorN) -> VectorN {
         VectorN {
             coords: (0..v.coords.len())
@@ -59,12 +69,15 @@ impl VectorN {
         self.coords.iter().all(|&f| f < f64::EPSILON)
     }
 
+    // dot product
     pub fn dot(&self, v: &VectorN) -> f64 {
         (0..v.coords.len())
             .map(|i| self.coords[i] * v.coords[i])
             .sum::<f64>()
     }
 
+    // CAN BE USED ONLY IF THE VECTORN IS A COLOR VECTOR
+    // return the color as (r, g, b) e u8^3
     pub fn get_color(&self) -> (u8, u8, u8) {
         if self.coords.len() != 3 {
             panic!("get_color on vector with a dimension != 3");
@@ -80,6 +93,8 @@ impl VectorN {
         )
     }
 }
+
+// TODO implem += & -=
 
 impl Add for VectorN {
     type Output = VectorN;
@@ -118,6 +133,7 @@ impl Neg for VectorN {
 impl Mul<&VectorN> for VectorN {
     type Output = VectorN;
 
+    // Cross product
     fn mul(self, v: &VectorN) -> VectorN {
         let l = v.coords.len();
         VectorN {
@@ -132,6 +148,7 @@ impl Mul<&VectorN> for VectorN {
 impl Mul<f64> for VectorN {
     type Output = VectorN;
 
+    // scaling
     fn mul(self, s: f64) -> VectorN {
         VectorN {
             coords: self.coords.iter().map(|f| s * f).collect::<Vec<f64>>()
@@ -142,6 +159,7 @@ impl Mul<f64> for VectorN {
 impl Div<f64> for VectorN {
     type Output = VectorN;
 
+    // scaling
     fn div(self, s: f64) -> VectorN {
         VectorN {
             coords: self.coords.iter().map(|f| f / s).collect::<Vec<f64>>()
