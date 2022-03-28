@@ -38,7 +38,7 @@ fn main() {
 
     // -- useful values --
     let res = resolution.parse::<u32>().unwrap();
-    let nbpixel = res.pow((dim - 1) as u32);
+    let nbpixel = (res as u128).pow((dim - 1) as u32);
 
     let viewport_size = 2.0;
     let focal_len = 1.0;
@@ -77,7 +77,7 @@ fn main() {
 
         out = write_color(out, ray_color(r).get_color());
 
-        if (i + 1) % res == 0 {
+        if (i + 1) % (res as u128) == 0 {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);
             stderr().flush().unwrap();
         }
