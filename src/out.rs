@@ -17,15 +17,18 @@ pub fn write_color(mut out: File, color: (u8, u8, u8)) -> File {
     out
 }
 
-// only works (as intended) in 3d (TODO nD)
-// simple 'gradiant'
 pub fn ray_color(ray: Ray) -> VectorN {
     let mut tmp = vec![0.; ray.dir.coords.len()];
     tmp[ray.dir.coords.len() - 1] = -1.;
     let s = Sphere::new(VectorN::new(tmp), 0.5);
-    if s.is_hit(&ray) {
-        return VectorN::new(vec![1., 0., 0.]);
+    let t = s.is_hit(&ray);
+    if t > 0. {
+        let r = (ray.at(t) - s.coords.clone()).unit();
+        // temporary 3d only colors
+        return VectorN::new(vec![r.coords[0] + 1., r.coords[1] + 1., r.coords[2] + 1.]) * 0.5;
     }
+    // only works (as intended) in 3d (TODO nD)
+    // simple 'gradiant'
     let dir = ray.dir.unit();
     let t = 0.5 * (dir.coords[1] + 1.);
     VectorN::new(vec![1., 1., 1.]) * (1. - t)
