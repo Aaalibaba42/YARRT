@@ -21,7 +21,7 @@ pub fn ray_color(ray: Ray) -> VectorN {
     let mut tmp = vec![0.; ray.dir.coords.len()];
     tmp[ray.dir.coords.len() - 1] = -1.;
     let s = Sphere::new(VectorN::new(tmp), 0.5);
-    let t = s.is_hit(&ray);
+    let t = s.hit(&ray);
     if t > 0. {
         let r = (ray.at(t) - s.coords.clone()).unit();
         // temporary 3d only colors

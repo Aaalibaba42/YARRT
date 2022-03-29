@@ -1,6 +1,12 @@
 use crate::Ray;
 use crate::VectorN;
 
+pub struct hit_record {
+    pub pos: VectorN,
+    pub norm: VectorN,
+    pub t: f64
+}
+
 #[derive(Clone)]
 pub struct Sphere {
     pub coords: VectorN,
@@ -15,18 +21,28 @@ impl Sphere {
         }
     }
 
-    // wanted to call it ishit but I had to change it
-    pub fn is_hit(&self, r: &Ray) -> f64 {
-        let oc = r.pos.clone() - self.coords.clone();
-        let a = r.dir.clone().dot(&r.dir);
-        let b = 2. * oc.clone().dot(&r.dir);
-        let c = oc.clone().dot(&oc) - self.radius * self.radius;
-        let d = b * b - 4. * a * c;
+    // maybe return an option of hit_record instead of ref to hit_record and return bool
+    pub fn hit(&self, ray: &Ray, res: &mut hit_record, tmin: f64, tmax: f64) -> bool {
+        let oc = ray.pos.clone() - self.coords.clone();
+        let a = r.dir.clone().lensqr();
+        let b = oc.clone().dot(&r.dir);
+        let c = oc.clone().lensqr() - self.radius * self.radius;
+        let d = b * b - a * c;
         if d < 0. {
-            -1.
+            return false;
         }
-        else {
-            (-b - d.sqrt()) / (2. * a)
+        let sqrd = d.sqrt();
+        let root = (-b - sqrd) / a;
+        if root < tmin || tmax < root {
+            root = (-b + sqrd) / a;
+            if (root < tmin || tmax < root) {
+                return false;
+            }
         }
+
+        res.t = root;
+        res.pos = r.at(root);
+        rec.norm = (res.p - self.pos) / radius;
+        return true;
     }
 }
