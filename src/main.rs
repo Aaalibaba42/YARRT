@@ -21,7 +21,7 @@ fn incr(v: &mut Vec<u32>, size: u32) {
 fn main() {
     // -- Bad command --
     if env::args().count() != 4 {
-        println!("Usage: ./yaart OutFile dimensions resolution");
+        println!("Usage: ./yarrt OutFile dimensions resolution");
         return;
     }
 
