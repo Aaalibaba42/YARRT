@@ -1,6 +1,6 @@
 use std::f64;
 use std::cmp::PartialEq;
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Div, DivAssign, Neg, Mul, MulAssign};
 
 #[cfg(test)]
 use assert_approx_eq::assert_approx_eq;
@@ -94,8 +94,8 @@ impl VectorN {
     }
 }
 
-// TODO implem += & -=
-
+// TODO implem op Assign
+// TODO We'll have a lot of work here, redo everything, correctly this time and you have to support every operation with T op T, T op &T, &T op T, &T op &T... it's the only way to not have that much cloning
 impl Add for VectorN {
     type Output = VectorN;
 
