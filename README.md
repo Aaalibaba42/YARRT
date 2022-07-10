@@ -8,6 +8,8 @@ This readme is starting to feel like a diary but anyway, it's definitly n dimens
 
 I should really have studied more Rust before going in, it looks horrible and unpleasant to work on, I'll try to clean up the code before going any further. As it is now the background is raytraced, an hypersphere is in front of the camera, it gets hit by rays, but the color of the hypersphere is just a random gradient that works from 1->6 dimensions (the normal vector of the ray-hit to the hypersphere multiplied by the primary and secondary colors). It doesn't look great but it runs enough for me.
 
+Okay I'm quite happy with how it's cleaned, still some things could be better (for instance C++ like structures like a function that takes a ref and returns a boolean instead of returning a Result\<T\>). I'll start adding some features before cleaning up again
+
 # How it works
 $ cargo run {Output File} {Dimension of the Space} {Resolution}
 

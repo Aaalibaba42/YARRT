@@ -94,9 +94,6 @@ impl VectorN {
     }
 }
 
-// TODO implem op Assign
-// TODO We'll have a lot of work here, redo everything, correctly this time and you have to support every operation with T op T, &T op T, &T op &T... it's the only way to not have that much cloning
-
 // -- ADD --
 impl Add<&VectorN> for &VectorN {
     type Output = VectorN;
