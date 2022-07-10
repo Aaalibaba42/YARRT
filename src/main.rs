@@ -61,23 +61,23 @@ fn main() {
     // calculating starting point
     let mut tmp = VectorN::new(vec![0.; dim as usize]);
     tmp.coords[(dim as usize)-1] = focal_len;
-    let mut firstcorner = camera.pos.clone() - tmp;
+    let mut firstcorner = &camera.pos - &tmp;
     for i in 0..(dim as usize)-1 {
-        firstcorner = firstcorner.clone() - axis(i)/2.;
+        firstcorner -= &(axis(i)/2.);
     }
 
     // -- render --
     let mut loopvars = vec![0; dim as usize - 1];
     for i in 0..nbpixel {
-        tmp = firstcorner.clone() - camera.pos.clone();
+        tmp = &firstcorner - &camera.pos;
         for j in 0..(dim as usize) - 1 {
-            tmp = tmp.clone() + axis(j) * (1. - loopvars[j] as f64/res as f64);
+            tmp += axis(j) * (1. - loopvars[j] as f64/res as f64);
         }
-        let r = Ray::new(camera.pos.clone(), tmp);
+        let r = Ray::new(&camera.pos, &tmp);
 
         out = write_color(out, ray_color(r).get_color());
 
-        if (i + 1) % (res as u128) == 0 {
+        if (i + 1)%(res as u128) == 0 {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);
             stderr().flush().unwrap();
         }

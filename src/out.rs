@@ -15,7 +15,7 @@ pub fn ray_color(ray: Ray) -> VectorN {
     tmp[ray.dir.coords.len() - 1] = -1.;
     let s = Sphere::new(VectorN::new(tmp), 0.5);
 
-    let mut hr = hit_record::new();
+    let mut hr = HitRecord::new();
     if s.hit(&ray, &mut hr, 0., f64::MAX) {
         let colors = [VectorN::new(vec![0., 0., 1.]),
                       VectorN::new(vec![0., 1., 0.]),
@@ -24,28 +24,16 @@ pub fn ray_color(ray: Ray) -> VectorN {
                       VectorN::new(vec![1., 0., 1.]),
                       VectorN::new(vec![0., 1., 1.])];
         let mut r = VectorN::new(vec![0., 0., 0.]);
-        (0..hr.norm.coords.iter().count()).map(|i| {
-            r = r.clone() + colors[i].clone() * hr.norm.coords[i];
+        (0..hr.norm.coords.len()).map(|i| {
+            r += &colors[i] * hr.norm.coords[i];
         }).count();
         return VectorN::new(r.unit().coords.iter().map(|&x| if x > 0. {x} else {-x}).collect::<Vec<f64>>());
-//        return (VectorN::new(hr.norm.coords.iter().map(|f| f + 1.).collect::<Vec<f64>>())) * 0.5;
     }
-    // only works (as intended) in 3d (TODO nD)
-    // simple 'gradiant'
+
     let dir = ray.dir.unit();
     let t = 0.5 * (dir.coords[1] + 1.);
     VectorN::new(vec![1., 1., 1.]) * (1. - t)
     + VectorN::new(vec![0.5, 0.7, 1.]) * t
-
-    // attempt at a dimension-agnostic gradiant
-    // okay going down to 6-dimension
-    /*
-    let d = ray.dir.unit().coords;
-    let mut r = VectorN::new(vec![0., 0., 0.]);
-    for i in 0..d.len() {
-        r = r + (colors[i].clone() * (d[i] + 1.) * 0.5);
-    }
-    r.unit()*/
 }
 
 pub fn create_outfile(path: &str, dim: u8, resolution: &str) -> File {

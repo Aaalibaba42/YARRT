@@ -95,7 +95,34 @@ impl VectorN {
 }
 
 // TODO implem op Assign
-// TODO We'll have a lot of work here, redo everything, correctly this time and you have to support every operation with T op T, T op &T, &T op T, &T op &T... it's the only way to not have that much cloning
+// TODO We'll have a lot of work here, redo everything, correctly this time and you have to support every operation with T op T, &T op T, &T op &T... it's the only way to not have that much cloning
+
+// -- ADD --
+impl Add<&VectorN> for &VectorN {
+    type Output = VectorN;
+
+    fn add(self, v: &VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] + v.coords[i])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
+
+impl Add<&VectorN> for VectorN {
+    type Output = VectorN;
+
+    fn add(self, v: &VectorN) -> VectorN {
+        Self {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] + v.coords[i])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
 impl Add for VectorN {
     type Output = VectorN;
 
@@ -103,6 +130,50 @@ impl Add for VectorN {
         VectorN {
             coords: (0..v.coords.len())
                         .map(|i| self.coords[i] + v.coords[i])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
+// -- ADDASSIGN --
+
+impl AddAssign<&VectorN> for VectorN {
+    fn add_assign(&mut self, v: &VectorN) {
+        for i in 0..self.coords.len() {
+            self.coords[i] += v.coords[i];
+        }
+    }
+}
+
+impl AddAssign for VectorN {
+    fn add_assign(&mut self, v: VectorN) {
+        for i in 0..self.coords.len() {
+            self.coords[i] += v.coords[i];
+        }
+    }
+}
+
+// -- SUB --
+
+impl Sub<&VectorN> for &VectorN {
+    type Output = VectorN;
+
+    fn sub(self, v: &VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] - v.coords[i])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
+impl Sub<&VectorN> for VectorN {
+    type Output = VectorN;
+
+    fn sub(self, v: &VectorN) -> VectorN {
+        VectorN {
+            coords: (0..v.coords.len())
+                        .map(|i| self.coords[i] - v.coords[i])
                         .collect::<Vec<f64>>()
         }
     }
@@ -120,6 +191,36 @@ impl Sub for VectorN {
     }
 }
 
+// -- SUBASSIGN --
+
+impl SubAssign<&VectorN> for VectorN {
+    fn sub_assign(&mut self, v: &VectorN) {
+        for i in 0..self.coords.len() {
+            self.coords[i] -= v.coords[i];
+        }
+    }
+}
+
+impl SubAssign for VectorN {
+    fn sub_assign(&mut self, v: VectorN) {
+        for i in 0..self.coords.len() {
+            self.coords[i] -= v.coords[i];
+        }
+    }
+}
+
+// -- NEG --
+
+impl Neg for &VectorN {
+    type Output = VectorN;
+
+    fn neg(self) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| -f).collect::<Vec<f64>>()
+        }
+    }
+}
+
 impl Neg for VectorN {
     type Output = VectorN;
 
@@ -130,10 +231,12 @@ impl Neg for VectorN {
     }
 }
 
-impl Mul<&VectorN> for VectorN {
-    type Output = VectorN;
+// -- MUL --
 
     // Cross product
+impl Mul<&VectorN> for &VectorN {
+    type Output = VectorN;
+
     fn mul(self, v: &VectorN) -> VectorN {
         let l = v.coords.len();
         VectorN {
@@ -145,10 +248,48 @@ impl Mul<&VectorN> for VectorN {
     }
 }
 
-impl Mul<f64> for VectorN {
+impl Mul<&VectorN> for VectorN {
     type Output = VectorN;
 
-    // scaling
+    fn mul(self, v: &VectorN) -> VectorN {
+        let l = v.coords.len();
+        VectorN {
+            coords: (0..l)
+                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l]
+                               - self.coords[(i + 2)%l] * v.coords[(i + 1)%l])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
+impl Mul<VectorN> for VectorN {
+    type Output = VectorN;
+
+    fn mul(self, v: VectorN) -> VectorN {
+        let l = v.coords.len();
+        VectorN {
+            coords: (0..l)
+                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l]
+                               - self.coords[(i + 2)%l] * v.coords[(i + 1)%l])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+    // Scaling
+impl Mul<&f64> for &VectorN {
+    type Output = VectorN;
+
+    fn mul(self, s: &f64) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| s * f).collect::<Vec<f64>>()
+        }
+    }
+}
+
+
+impl Mul<f64> for &VectorN {
+    type Output = VectorN;
+
     fn mul(self, s: f64) -> VectorN {
         VectorN {
             coords: self.coords.iter().map(|f| s * f).collect::<Vec<f64>>()
@@ -156,16 +297,97 @@ impl Mul<f64> for VectorN {
     }
 }
 
+impl Mul<f64> for VectorN {
+    type Output = VectorN;
+
+    fn mul(self, s: f64) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| s * f).collect::<Vec<f64>>()
+        }
+    }
+}
+
+// -- MULASSIGN --
+
+impl MulAssign<&VectorN> for VectorN {
+    fn mul_assign(&mut self, v: &VectorN) {
+        let l = v.coords.len();
+        *self = VectorN {
+            coords: (0..l)
+                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l]
+                               - self.coords[(i + 2)%l] * v.coords[(i + 1)%l])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
+impl MulAssign for VectorN {
+    fn mul_assign(&mut self, v: VectorN) {
+        let l = v.coords.len();
+        *self = VectorN {
+            coords: (0..l)
+                        .map(|i| self.coords[(i + 1)%l] * v.coords[(i + 2)%l]
+                               - self.coords[(i + 2)%l] * v.coords[(i + 1)%l])
+                        .collect::<Vec<f64>>()
+        }
+    }
+}
+
+impl MulAssign<f64> for VectorN {
+    fn mul_assign(&mut self, f: f64) {
+        for n in self.coords.iter_mut() {
+            *n *= f
+        }
+    }
+}
+
+// -- DIV --
+
+    // scaling
+impl Div<&f64> for &VectorN {
+    type Output = VectorN;
+
+    fn div(self, s: &f64) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| f / s).collect::<Vec<f64>>()
+        }
+    }
+}
+
+
+impl Div<&f64> for VectorN {
+    type Output = VectorN;
+
+    fn div(self, s: &f64) -> VectorN {
+        VectorN {
+            coords: self.coords.iter().map(|f| f / s).collect::<Vec<f64>>()
+        }
+    }
+}
+
+
 impl Div<f64> for VectorN {
     type Output = VectorN;
 
-    // scaling
     fn div(self, s: f64) -> VectorN {
         VectorN {
             coords: self.coords.iter().map(|f| f / s).collect::<Vec<f64>>()
         }
     }
 }
+
+// -- DIVASSIGN --
+
+impl DivAssign<f64> for VectorN {
+    fn div_assign(&mut self, f: f64) {
+        for n in self.coords.iter_mut() {
+            *n /= f
+        }
+    }
+}
+
+
+// euh
 
 impl PartialEq for VectorN {
     fn eq(&self, v: &VectorN) -> bool {

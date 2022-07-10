@@ -1,16 +1,16 @@
 use crate::Ray;
 use crate::VectorN;
 
-pub struct hit_record {
+pub struct HitRecord {
     pub pos: VectorN,
     pub norm: VectorN,
     pub t: f64,
     pub front_face: bool
 }
 
-impl hit_record {
-    pub fn new() -> hit_record {
-        hit_record {
+impl HitRecord {
+    pub fn new() -> HitRecord {
+        HitRecord {
             pos: VectorN::new(Vec::new()),
             norm: VectorN::new(Vec::new()),
             t: 0.,
@@ -20,7 +20,7 @@ impl hit_record {
 
     pub fn face_normal(&mut self, r: &Ray, out_norm: &VectorN) {
         self.front_face = r.dir.dot(out_norm) < 0.;
-        self.norm = if self.front_face {out_norm.clone()} else {out_norm.clone() * -1.}
+        self.norm = if self.front_face {out_norm.clone()} else {-out_norm.clone()}
     }
 }
 
@@ -38,12 +38,12 @@ impl Sphere {
         }
     }
 
-    // maybe return an option of hit_record instead of ref to hit_record and return bool
-    pub fn hit(&self, ray: &Ray, res: &mut hit_record, tmin: f64, tmax: f64) -> bool {
-        let oc = ray.pos.clone() - self.coords.clone();
-        let a = ray.dir.clone().lensqr();
-        let b = oc.clone().dot(&ray.dir);
-        let c = oc.clone().lensqr() - self.radius * self.radius;
+    // TODO maybe return an option of HitRecord instead of ref to HitRecord and return bool
+    pub fn hit(&self, ray: &Ray, res: &mut HitRecord, tmin: f64, tmax: f64) -> bool {
+        let oc = &ray.pos - &self.coords;
+        let a = ray.dir.lensqr();
+        let b = oc.dot(&ray.dir);
+        let c = oc.lensqr() - self.radius * self.radius;
         let d = b * b - a * c;
         if d < 0. {
             return false;
@@ -60,7 +60,7 @@ impl Sphere {
 
         res.t = root;
         res.pos = ray.at(root);
-        let on = (res.pos.clone() - self.coords.clone()) / self.radius;
+        let on = (&res.pos - &self.coords) / self.radius;
         res.face_normal(ray, &on);
 
         true

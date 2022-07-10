@@ -7,14 +7,14 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(p: VectorN, d: VectorN) -> Ray {
+    pub fn new(p: &VectorN, d: &VectorN) -> Ray {
         Ray {
-            pos: p,
-            dir: d
+            pos: p.clone(),
+            dir: d.clone(),
         }
     }
 
     pub fn at(&self, t: f64) -> VectorN {
-        return self.pos.clone() + self.dir.clone() * t;
+        &self.dir * t + &self.pos
     }
 }
