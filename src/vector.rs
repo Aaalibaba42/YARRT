@@ -1,6 +1,8 @@
-use std::f64;
-use std::cmp::PartialEq;
-use std::ops::{Add, AddAssign, Sub, SubAssign, Div, DivAssign, Neg, Mul, MulAssign};
+use std::{
+    f64,
+    cmp::PartialEq,
+    ops::{Add, AddAssign, Sub, SubAssign, Div, DivAssign, Neg, Mul, MulAssign},
+};
 
 #[cfg(test)]
 use assert_approx_eq::assert_approx_eq;

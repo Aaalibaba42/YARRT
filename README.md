@@ -10,6 +10,8 @@ I should really have studied more Rust before going in, it looks horrible and un
 
 Okay I'm quite happy with how it's cleaned, still some things could be better (for instance C++ like structures like a function that takes a ref and returns a boolean instead of returning a Result\<T\>). I'll start adding some features before cleaning up again
 
+Just added a somewhat correct error handling, but I'm struggling to find the will to finish it
+
 # How it works
 $ cargo run {Output File} {Dimension of the Space} {Resolution}
 

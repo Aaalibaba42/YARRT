@@ -1,5 +1,7 @@
-use crate::Ray;
-use crate::VectorN;
+use crate::{
+    ray::Ray,
+    vector::VectorN,
+};
 
 pub struct HitRecord {
     pub pos: VectorN,
@@ -38,15 +40,15 @@ impl Sphere {
         }
     }
 
-    // TODO maybe return an option of HitRecord instead of ref to HitRecord and return bool
-    pub fn hit(&self, ray: &Ray, res: &mut HitRecord, tmin: f64, tmax: f64) -> bool {
+    pub fn hit(&self, ray: &Ray, tmin: f64, tmax: f64) -> Option<HitRecord> {
+        let mut res = HitRecord::new();
         let oc = &ray.pos - &self.coords;
         let a = ray.dir.lensqr();
         let b = oc.dot(&ray.dir);
         let c = oc.lensqr() - self.radius * self.radius;
         let d = b * b - a * c;
         if d < 0. {
-            return false;
+            return None;
         }
 
         let sqrd = d.sqrt();
@@ -54,7 +56,7 @@ impl Sphere {
         if root < tmin || tmax < root {
             root = (-b + sqrd) / a;
             if root < tmin || tmax < root {
-                return false;
+                return None;
             }
         }
 
@@ -63,6 +65,6 @@ impl Sphere {
         let on = (&res.pos - &self.coords) / self.radius;
         res.face_normal(ray, &on);
 
-        true
+        return Some(res);
     }
 }

@@ -2,12 +2,21 @@ mod vector;
 mod ray;
 mod shapes;
 mod out;
+mod my_error_ts;
 
-use std::env;
-use std::io::{stderr, Write};
-use crate::out::*;
-use crate::vector::*;
-use crate::ray::*;
+use std::{
+    env,
+    io::{
+        stderr,
+        Write
+    },
+};
+use crate::{
+    out::*,
+    vector::VectorN,
+    ray::Ray,
+    my_error_ts::MyErrorTs,
+};
 
 fn incr(v: &mut Vec<u32>, size: u32) {
     let mut tmp = 1;
@@ -18,26 +27,24 @@ fn incr(v: &mut Vec<u32>, size: u32) {
     }
 }
 
-fn main() {
+fn main() -> Result<(), MyErrorTs> {
     // -- Bad command --
-    if env::args().count() != 4 {
-        println!("Usage: ./yarrt OutFile dimensions resolution");
-        return;
-    }
+    (if env::args().count() != 4 { Err(MyErrorTs::UsageError) } else { Ok(()) })?;
 
     // -- prase command --
     let mut args = env::args();
     args.next();
-    let path: String = args.next().unwrap();
+    let path: String = args.next().ok_or(MyErrorTs::UsageError)?;
 
-    let dim = args.next().unwrap().parse::<u8>().unwrap();
-    let resolution = args.next().unwrap();
+    let dim = args.next().ok_or(MyErrorTs::UsageError)?
+                  .parse::<u8>().map_err(MyErrorTs::PIE)?;
+    let resolution = args.next().ok_or(MyErrorTs::UsageError)?;
 
     // -- creating and initialising output file --
-    let mut out = create_outfile(&path, dim, &resolution);
+    let mut out = create_outfile(&path, dim, &resolution)?;
 
     // -- useful values --
-    let res = resolution.parse::<u32>().unwrap();
+    let res = resolution.parse::<u32>().map_err(MyErrorTs::PIE)?;
     let nbpixel = (res as u128).pow((dim - 1) as u32);
 
     let viewport_size = 2.0;
@@ -75,13 +82,15 @@ fn main() {
         }
         let r = Ray::new(&camera.pos, &tmp);
 
-        out = write_color(out, ray_color(r).get_color());
+        write_color(&mut out, ray_color(r).get_color())?;
 
         if (i + 1)%(res as u128) == 0 {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);
-            stderr().flush().unwrap();
+            stderr().flush().map_err(MyErrorTs::IO)?;
         }
         incr(&mut loopvars, res);
     }
     eprintln!();
+
+    Ok(())
 }
