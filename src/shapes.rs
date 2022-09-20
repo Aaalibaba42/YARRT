@@ -33,7 +33,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(v: VectorN, r: f64) -> Sphere{
+    pub fn new(v: VectorN, r: f64) -> Sphere {
         Sphere {
             coords: v,
             radius: r

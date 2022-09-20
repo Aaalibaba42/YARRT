@@ -4,9 +4,9 @@ use std::{
 };
 use crate::{
     vector::VectorN,
-    shapes::Sphere,
     ray::Ray,
     my_error_ts::MyErrorTs,
+    world::World,
 };
 
 pub fn write_color(out: &mut File, color: (u8, u8, u8)) -> Result<(), MyErrorTs> {
@@ -15,12 +15,8 @@ pub fn write_color(out: &mut File, color: (u8, u8, u8)) -> Result<(), MyErrorTs>
     Ok(())
 }
 
-pub fn ray_color(ray: Ray) -> VectorN {
-    let mut tmp = vec![0.; ray.dir.coords.len()];
-    tmp[ray.dir.coords.len() - 1] = -1.;
-    let s = Sphere::new(VectorN::new(tmp), 0.5);
-
-    let hit = s.hit(&ray, 0., f64::MAX);
+pub fn ray_color(ray: Ray, world: &World) -> VectorN {
+    let hit = world.objs[0].hit(&ray, 0., f64::MAX);
     return match hit {
         Some(hr) => {
             let colors = [VectorN::new(vec![0., 0., 1.]),

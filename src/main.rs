@@ -1,5 +1,6 @@
 mod vector;
 mod ray;
+mod world;
 mod shapes;
 mod out;
 mod my_error_ts;
@@ -16,6 +17,8 @@ use crate::{
     vector::VectorN,
     ray::Ray,
     my_error_ts::MyErrorTs,
+    shapes::Sphere,
+    world::World,
 };
 
 fn incr(v: &mut Vec<u32>, size: u32) {
@@ -47,8 +50,6 @@ fn main() -> Result<(), MyErrorTs> {
     let res = resolution.parse::<u32>().map_err(MyErrorTs::PIE)?;
     let nbpixel = (res as u128).pow((dim - 1) as u32);
 
-    let viewport_size = 2.0;
-    let focal_len = 1.0;
     // camera is basicly an object somewhere oriented to a dir
     // so assimilable to a Ray
     let mut camera = Ray {
@@ -58,37 +59,54 @@ fn main() -> Result<(), MyErrorTs> {
     // looking forward in the last coord, 0 otherwise
     camera.dir.coords[dim as usize - 1] = 1.;
 
+    // world
+    let mut world = World {
+        objs: vec![],
+        cam: camera,
+        dim: dim,
+        res: res,
+        viewport_size: 2.,
+        focal_len: 1.,
+    };
+
+    // example sphere
+    {
+        let mut tmp = vec![0.; world.dim as usize];
+        tmp[world.dim as usize - 1] = -1.;
+        world.objs.push(Sphere::new(VectorN::new(tmp), 0.5));
+    }
+
     // couldn't hardcode axis vectors
     let axis = |n: usize| -> VectorN {
-        let mut r = VectorN::new(vec![0.; dim as usize]);
-        r.coords[n] = viewport_size;
+        let mut r = VectorN::new(vec![0.; world.dim as usize]);
+        r.coords[n] = world.viewport_size;
         r
     };
 
     // calculating starting point
-    let mut tmp = VectorN::new(vec![0.; dim as usize]);
-    tmp.coords[(dim as usize)-1] = focal_len;
-    let mut firstcorner = &camera.pos - &tmp;
-    for i in 0..(dim as usize)-1 {
+    let mut tmp = VectorN::new(vec![0.; world.dim as usize]);
+    tmp.coords[(world.dim as usize)-1] = world.focal_len;
+    let mut firstcorner = &world.cam.pos - &tmp;
+    for i in 0..(world.dim as usize)-1 {
         firstcorner -= &(axis(i)/2.);
     }
 
     // -- render --
-    let mut loopvars = vec![0; dim as usize - 1];
+    let mut loopvars = vec![0; world.dim as usize - 1];
     for i in 0..nbpixel {
-        tmp = &firstcorner - &camera.pos;
-        for j in 0..(dim as usize) - 1 {
-            tmp += axis(j) * (1. - loopvars[j] as f64/res as f64);
+        tmp = &firstcorner - &world.cam.pos;
+        for j in 0..(world.dim as usize) - 1 {
+            tmp += axis(j) * (1. - loopvars[j] as f64/world.res as f64);
         }
-        let r = Ray::new(&camera.pos, &tmp);
+        let r = Ray::new(&world.cam.pos, &tmp);
 
-        write_color(&mut out, ray_color(r).get_color())?;
+        write_color(&mut out, ray_color(r, &world).get_color())?;
 
-        if (i + 1)%(res as u128) == 0 {
+        if (i + 1)%(world.res as u128) == 0 {
             eprint!("\rLoading: {:02.1}%", (i as f32/nbpixel as f32) * 100.);
             stderr().flush().map_err(MyErrorTs::IO)?;
         }
-        incr(&mut loopvars, res);
+        incr(&mut loopvars, world.res);
     }
     eprintln!();
 
