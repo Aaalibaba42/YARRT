@@ -16,7 +16,7 @@ pub fn write_color(out: &mut File, color: (u8, u8, u8)) -> Result<(), MyErrorTs>
 }
 
 pub fn ray_color(ray: Ray, world: &World) -> VectorN {
-    let hit = world.objs[0].hit(&ray, 0., f64::MAX);
+    let hit = world.hit(&ray, 0., f64::MAX);
     return match hit {
         Some(hr) => {
             let colors = [VectorN::new(vec![0., 0., 1.]),

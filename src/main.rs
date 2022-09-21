@@ -69,11 +69,16 @@ fn main() -> Result<(), MyErrorTs> {
         focal_len: 1.,
     };
 
-    // example sphere
+    // example sphere(s)
     {
         let mut tmp = vec![0.; world.dim as usize];
         tmp[world.dim as usize - 1] = -1.;
         world.objs.push(Sphere::new(VectorN::new(tmp), 0.5));
+
+        tmp = vec![0.; world.dim as usize];
+        tmp[world.dim as usize - 1] = -1.;
+        tmp[world.dim as usize - 2] = -100.5;
+        world.objs.push(Sphere::new(VectorN::new(tmp), 100.))
     }
 
     // couldn't hardcode axis vectors
