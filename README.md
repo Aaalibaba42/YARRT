@@ -1,3 +1,5 @@
+Kinda cringes me to look at it now, but I might as well make this public... This was pretty much my first steps with Rust, and the first time doing something like a raytracer. Lots of things I would do differently nowadays. 
+
 # YARRT
 Yet Another Rust RayTracer
 
